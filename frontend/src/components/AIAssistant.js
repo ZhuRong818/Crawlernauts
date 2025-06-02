@@ -27,6 +27,23 @@ const[loading, setLoading]=useState(false)
     chatEndRef.current?.scrollIntoView({ behavior:'smooth'})// browser animates the scroll
   }, [messages])
 
+  // Load message history from backend (only for logged-in users)
+  const fetchHistory=async()=>{
+    setLoading(true)
+    try {
+      const res=await api('/ai/history', 'GET')
+    
+      setMessages(res.history.map(m=>({
+        sender: m.role === 'user'?'user':'assistant',
+        text: m.content
+      })))
+    } catch (e) {
+      console.log('fail history') // maybe api is down or session expired
+      //forgot to export ds api caused the site crash
+    }
+    setLoading(false)
+
+  }
 
   const clearHistory=async()=>{
     if (!window.confirm('Clear all?')) return
