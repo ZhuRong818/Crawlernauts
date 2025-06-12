@@ -97,11 +97,7 @@ useEffect(()=>{
 //above line for each object builds a row array in header order
     return { headers,rows};
   };
-  /**
-   * run a crawl immediately
-   * Shows spinner
-   * Hits POST /crawl
-   */
+
   const runCrawlNow =async(url,mode,value,jobName)=> {
     setCrawlCtx({ url, mode, value });
     setPreviewLoading(true);
@@ -158,24 +154,8 @@ const scheduleCrawl = async (url,mode,value,name,iso) => {
     } catch (e) {
       return e.message;
     }
-  };
-  const handleRegister = async(email,pw)=>{
-    
-      const r =await api("/register","POST",{ username: email, password: pw });
-      if (r.msg !=="registered") return r.msg||"registration failed";
-      if (r.needsVerify){         
-        setPendingUsername(email);
-        setNeedsVerify(true);
-        return null;
-      }
-      //auto verifiy for local dev only 
-      setCurrentUser({ username: email, apiKey: r.apiKey });
-      window.localStorage.setItem("apiKey", r.apiKey);
-      setIsGuest(false);
-      return null;
-    
-  };
-
+  };}
+  
 
   const handleLogout =async()=>{
     if(!isGuest) await api("/logout","POST").catch(()=>{});
