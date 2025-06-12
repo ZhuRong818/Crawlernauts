@@ -127,7 +127,24 @@ def logout():
     return jsonify(msg="logged_out"), 200
 
 
+@auth_bp.route('/me', methods=['GET'])
+def me():
+    """Return current logged-in user's info (if any)."""
+    uid = session.get('user_id')
+    user = User.query.get(uid)
+    if not user:
+        return jsonify(msg="not_logged_in"), 403
+    return jsonify(user.as_simple()), 200
 
+
+@auth_bp.route('/regenerate_key', methods=['POST'])
+def regenerate_key():
+    """Generate a new API key for the current user."""
+    uid = session.get('user_id')
+    user = User.query.get(uid)
+    user.api_key = User.generate_api_key()  # replace with a new key
+    db.session.commit()
+    return jsonify(apiKey=user.api_key, msg="key_regenerated"), 200
 
 
 @auth_bp.route('/verify/send', methods=['POST'])
