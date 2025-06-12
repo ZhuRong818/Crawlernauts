@@ -136,45 +136,61 @@ const scheduleCrawl = async (url,mode,value,name,iso) => {
 
 //目前只有email register
 //以后加其他的（大概）
-  const handleLogin =async (email,pw)=>{
-    try {const r= await api("/login", "POST",{username:email,password: pw });
+const handleLogin = async (email, pw) => {
+  try {
+    const r = await api("/login", "POST", { username: email, password: pw });
 
-      if (r.msg === "unverified email") {
-        setPendingUsername(email);
-        setNeedsVerify(true);
-        return "Please enter correct verification code.";
-      }
-      if (r.msg!=="logged_in") return r.msg || "Login failed";
-      const me=await api("/me");
-      setCurrentUser({username: me.username, apiKey: me.apiKey });
-      window.localStorage.setItem("apiKey", me.apiKey);
-      setIsGuest(false);
-      return null;
-
-    } catch (e) {
-      return e.message;
+    if (r.msg === "unverified email") {
+      setPendingUsername(email);
+      setNeedsVerify(true);
+      return "Please enter the email verification code.";
     }
-  };}
-//6.13那次crash是这里忘了catch
-  const handleRegister = async(email,pw)=>{
-    try{
-      const r =await api("/register","POST",{ username: email, password: pw });
-      if (r.msg !=="registered") return r.msg||"registration failed";
 
-      if (r.needsVerify){         
-        setPendingUsername(email);
-        setNeedsVerify(true);
-        return null;
-      }
-      //auto verifiy for local dev only 
-      setCurrentUser({ username: email, apiKey: r.apiKey });
-      window.localStorage.setItem("apiKey", r.apiKey);
-      setIsGuest(false);
-      return null;
-    } catch (e){
-      return e.message;
+    if (r.msg === "needs_sms_verification") {
+      setPendingUsername(email);  
+      setNeedsSmsVerify(true);    
+      return "SMS verification required.";
     }
+
+    if (r.msg !== "logged_in") return r.msg || "Login failed";
+
+    const me = await api("/me");
+    setCurrentUser({ username: me.username, apiKey: me.apiKey });
+    window.localStorage.setItem("apiKey", me.apiKey);
+    setIsGuest(false);
+    return null;
+  } catch (e) {
+    return e.message;
   };
+
+//6.13那次crash是这里忘了catch
+const handleRegister = async (email, pw) => {
+  try {
+    const r = await api("/register", "POST", { username: email, password: pw });
+
+    if (r.msg !== "registered") return r.msg || "Registration failed";
+
+    if (r.needsVerify) {
+      setPendingUsername(email);
+      setNeedsVerify(true);
+      return null;
+    }
+
+    if (r.needsSmsVerification) {
+      setPendingUsername(email);
+      setNeedsSmsVerify(true);
+      return null;
+    }
+
+    setCurrentUser({ username: email, apiKey: r.apiKey });
+    window.localStorage.setItem("apiKey", r.apiKey);
+    setIsGuest(false);
+    return null;
+  } catch (e) {
+    return e.message;
+  }
+};
+
 
 
   const handleLogout =async()=>{
