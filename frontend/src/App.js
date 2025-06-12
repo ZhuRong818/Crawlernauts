@@ -155,8 +155,9 @@ const scheduleCrawl = async (url,mode,value,name,iso) => {
       return e.message;
     }
   };}
+//6.13那次crash是这里忘了catch
   const handleRegister = async(email,pw)=>{
-
+    try{
       const r =await api("/register","POST",{ username: email, password: pw });
       if (r.msg !=="registered") return r.msg||"registration failed";
 
@@ -170,8 +171,10 @@ const scheduleCrawl = async (url,mode,value,name,iso) => {
       window.localStorage.setItem("apiKey", r.apiKey);
       setIsGuest(false);
       return null;
-    };
-
+    } catch (e){
+      return e.message;
+    }
+  };
 
 
   const handleLogout =async()=>{
