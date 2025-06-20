@@ -67,6 +67,7 @@ def schedule_crawl():
             mode,
             value or "",
             job_name,
+            run_at.isoformat(),
             is_recurring,
             frequency,
         )
@@ -94,7 +95,7 @@ def rerun_crawl_job(job_id: int):
             url= job.url,
             extraction_mode  = job.extraction_mode,
             extraction_value = job.extraction_value,
-            data= json.dumps(results),
+            data= results,
         )
         db.session.add(new_result)
         db.session.commit()
@@ -113,3 +114,5 @@ def rerun_crawl_job(job_id: int):
         return jsonify(msg="Job rerun successfully", data=results), 200
     except Exception as e:
         return jsonify(msg=str(e)), 500
+
+
