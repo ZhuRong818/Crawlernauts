@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import Blueprint, request, jsonify
+from crawler import run_crawler
 from mailer import send_crawl_finished_email
 
 
@@ -53,6 +54,8 @@ def schedule_crawl():
         return jsonify(msg="Invalid scheduledTime format"), 400
 
 
+    if run_at < datetime.utcnow():
+        return jsonify(msg="scheduled time in past"), 400
     if run_at >= datetime(2036, 1, 1):
         return jsonify(msg="scheduled time must be before 2036-01-01"), 400
 
@@ -110,8 +113,3 @@ def rerun_crawl_job(job_id: int):
         return jsonify(msg="Job rerun successfully", data=results), 200
     except Exception as e:
         return jsonify(msg=str(e)), 500
-
-
-
-
-
