@@ -49,6 +49,7 @@ def send_verification_email(to_email: str, code: str) -> None:
     )
 
     message = Mail(
+        
         from_email=FROM_ADDRESS,
         to_emails=to_email,
         subject=subject,
@@ -56,8 +57,6 @@ def send_verification_email(to_email: str, code: str) -> None:
     )
 
     _send_or_log(message, f"[DEV] verification code for {to_email}: {code}")
-
-
 
     _send_or_log(
         message,
