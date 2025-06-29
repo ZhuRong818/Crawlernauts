@@ -118,7 +118,7 @@ if __name__ == "__main__":
     srv = create_app(with_scheduler=True)  
     srv.run(
         host="0.0.0.0",
-        port=int(os.getenv("PORT", 5051)),
+        port=int(os.getenv("PORT", 5050)),
         debug=False,
         use_reloader=False,
     )
