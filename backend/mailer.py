@@ -55,12 +55,6 @@ def send_verification_email(to_email: str, code: str) -> None:
         subject=subject,
         html_content=html,
     )
-def send_crawl_finished_email(
-    to_email: str,
-    job_name: str,
-    ran_at: datetime,
-    result_url: str | None = None,
-) -> None:
 
     subject = f"Crawlernaut – “{job_name}” finished ✔"
 

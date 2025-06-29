@@ -44,7 +44,7 @@ def create_app(with_scheduler: bool = False) -> Flask:
     app.config.update(
         SESSION_COOKIE_SECURE   =is_prod,
         SESSION_COOKIE_HTTPONLY=True,
-        SESSION_COOKIE_SAMESITE = "None",   # allow request across sites
+       ## SESSION_COOKIE_SAMESITE = "None",   # allow request across sites
     )
 
 
