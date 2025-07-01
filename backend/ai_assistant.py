@@ -17,13 +17,6 @@ DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "").strip()
 LOGGER = logging.getLogger(__name__)
 
 
-def mock_mode() -> bool:
-    return (
-        (current_app and current_app.debug)
-        or os.getenv("MOCK_AI") == "1"
-        or not bool(DEEPSEEK_KEY)
-    )
-
 
 
 
