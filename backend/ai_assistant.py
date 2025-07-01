@@ -24,7 +24,7 @@ def suggest():
         return jsonify(error="Empty message"), 400
     uid= session.get("user_id")
     history= _load_history(uid) + [{"role": "user", "content": user_input}]
-
+## msg need be precise
     system_msg = {
         "role": "system",
         "content": (
@@ -35,14 +35,15 @@ def suggest():
             "If the user asks off-topic, steer them back to web-crawling."
         )
     }
-    messages = [system_msg] + history[-99:]
+
+
 def _load_history(uid: Optional[int]) -> List[Dict]:
     if uid:
         msgs=(
             ChatMessage.query
                        .filter_by(user_id=uid)
                        .order_by(ChatMessage.id.desc())
-                       .limit(100)
+                       .limit(200)
                        .all()
         )
         return[{"role": m.role, "content": m.content} for m in reversed(msgs)]
