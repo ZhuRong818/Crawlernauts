@@ -307,6 +307,39 @@ def run_job_now(job_id):
 
 
 
+@api_bp.get("/results/<int:res_id>")
+def get_result(res_id):
+   user = _require_user()
+   db.session.expire_all()
+   res  = CrawlResult.query.get_or_404(res_id)
+   if res.user_id != user.id:
+       abort(403)
+   return jsonify(json.loads(res.data)), 200
+
+
+
+
+@api_bp.get("/results/<int:res_id>/download")
+def download_result(res_id):
+   user = _require_user()
+   res  = CrawlResult.query.get_or_404(res_id)
+   if res.user_id != user.id:
+       abort(403)
+
+
+   fmt  = (request.args.get("fmt") or "csv").lower()
+   rows = json.loads(res.data)
+
+
+   if fmt == "json":
+    buf = BytesIO(json.dumps(rows, indent=2).encode())
+    return send_file(
+        buf,
+        as_attachment=True,
+        download_name=f"crawl_{res_id}.json",
+        mimetype="text/json"  # BUG: should be application/json
+    )
+
 
 
 
