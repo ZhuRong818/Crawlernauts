@@ -52,7 +52,7 @@ def _extract(url: str, mode: str, value: str, limit: int = 30):
 
    if mode == "depth":
        try:
-           depth = int(value)
+           depth=int(value)
        except ValueError:
            return [], "invalid depth"
        return run_crawler(url, "max_pages", depth), None
@@ -105,10 +105,10 @@ def _extract(url: str, mode: str, value: str, limit: int = 30):
 @api_bp.post("/crawl")
 def crawl_now():
     payload = request.get_json(silent=True) or {}
-    url   = (payload.get("url")   or "").strip()
-    mode  = (payload.get("mode")  or "").strip()
+    url = (payload.get("url")   or "").strip()
+    mode = (payload.get("mode")  or "").strip()
     value = (payload.get("value") or "").strip()
-    name  = (payload.get("name")  or "").strip()
+    name = (payload.get("name")  or "").strip()
 
 
     if not url or not mode:
@@ -153,7 +153,6 @@ def crawl_now():
 
     result = CrawlResult(
         user_id=user.id,
-        job_id=job.id,
         url=url,
         extraction_mode=mode,
         extraction_value=value,
@@ -178,11 +177,7 @@ def crawl_now():
 @api_bp.post("/schedule")
 def schedule_crawl():
    user = _require_user()
-   d    = request.get_json() or {}
-
-
-
-
+   d = request.get_json() or {}
    url = (d.get("url") or "").strip()
    mode = (d.get("mode") or "").strip()
    value = (d.get("value")or "").strip()
