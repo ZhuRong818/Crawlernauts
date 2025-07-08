@@ -77,7 +77,7 @@ def rerun_crawl_job(job_id: int):
 
         new_result = CrawlResult(
             user_id = job.user_id,
-
+            job_id = job.id,
             url= job.url,
             extraction_mode = job.extraction_mode,
             extraction_value = job.extraction_value,
