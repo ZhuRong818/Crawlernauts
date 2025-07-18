@@ -358,7 +358,7 @@ def run_crawler(url: str, mode: str, value):
             images = soup.find_all('img')
             base_dir = os.path.abspath(os.path.dirname(__file__))
             img_dir = os.path.join(base_dir, "..", "frontend", "build", "static", "images")
-            os.makedirs(img_dir, exist_ok=True)
+
             results = []
             for img in images:
                 src = img.get('src')
