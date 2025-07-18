@@ -345,8 +345,7 @@ def run_crawler(url: str, mode: str, value):
     try:
         if mode in ('css', 'tag', 'text', 'image'):
             response = requests.get(url, headers=DEFAULT_HEADERS, timeout=TIMEOUT)
-            if response.status_code != 200:
-                raise Exception(f"Failed to fetch URL (status {response.status_code})")
+           
             soup = BeautifulSoup(response.text, 'lxml')
         if mode == 'text':
             # Get the first paragraph directly under <body>
