@@ -23,7 +23,7 @@ import sqlite3
 
 from prometheus_client import Counter, Gauge, start_http_server
 
-DEFAULT_START_URLS = ["https://example.com"]
+DEFAULT_START_URLS =  ["https://example.com"]
 DEFAULT_MAX_PAGES    = 20
 POLITENESS_DELAY     = 1.0
 USER_AGENT           = "MyCrawlerBot/1.0 (+https://example.com/bot)"

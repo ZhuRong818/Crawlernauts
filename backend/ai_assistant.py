@@ -25,27 +25,7 @@ def mock_mode() -> bool:
     )
 
 
-def _load_history(uid: Optional[int]) -> List[Dict]:
-    if uid:
-        msgs=(
-            ChatMessage.query
-                       .filter_by(user_id=uid)
-                       .order_by(ChatMessage.id.desc())
-                       .limit(100)
-                       .all()
-        )
-        return[{"role": m.role, "content": m.content} for m in reversed(msgs)]
-    return session.get("chat_history", [])[-100:]
 
-
-def _save_to_history(uid: Optional[int], role: str, content: str) -> None:
-    if uid:
-        db.session.add(ChatMessage(user_id=uid, role=role, content=content))
-        db.session.commit()
-    else:
-        hist = session.setdefault("chat_history", [])
-        hist.append({"role": role, "content": content})
-        session["chat_history"] = hist[-100:]
 
 @ai_bp.post("/suggest")
 def suggest():
