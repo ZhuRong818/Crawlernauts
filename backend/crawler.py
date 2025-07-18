@@ -354,7 +354,7 @@ def run_crawler(url: str, mode: str, value):
             text_content = first_para.get_text(strip=True) if first_para else ''
             return [ { 'Text': text_content } ]
         elif mode == 'image':
-
+            os.makedirs(img_dir, exist_ok=True)
             images = soup.find_all('img')
             base_dir = os.path.abspath(os.path.dirname(__file__))
             img_dir = os.path.join(base_dir, "..", "frontend", "build", "static", "images")
