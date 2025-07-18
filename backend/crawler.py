@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 
 import sys
 import time
@@ -236,6 +235,109 @@ class Storage:
         except:
             logger.exception(f"Save failed: {item['url']}")
 
+class Scheduler:
+    def __init__(self, start_urls, max_pages, workers, resume_file, include_patterns, exclude_patterns):
+        self.queue         = Queue()
+        for u in start_urls: self.queue.put(u)
+        self.visited       = set()
+        self.vis_lock      = Lock()
+        self.domain_last   = defaultdict(float)
+        self.dom_lock      = Lock()
+        self.max_pages     = max_pages
+        self.count         = 0
+        self.workers       = workers
+        self.stop          = Event()
+        self.resume_file   = resume_file
+        self.include_regex = [re.compile(p) for p in include_patterns]
+        self.exclude_regex = [re.compile(p) for p in exclude_patterns]
+
+        # resume if pickle exists
+        if Path(resume_file).exists():
+            try:
+                data = pickle.load(open(resume_file,'rb'))
+                for u in data.get('queue', []): self.queue.put(u)
+                self.visited = set(data.get('visited', []))
+                logger.info("Resumed state")
+            except:
+                logger.warning("Failed to resume state")
+
+    def save_state(self):
+        try:
+            with open(self.resume_file,'wb') as f:
+                pickle.dump({
+                    'queue':   list(self.queue.queue),
+                    'visited': list(self.visited)
+                }, f)
+            logger.info("State saved")
+        except:
+            logger.exception("Save state failed")
+
+    def worker(self, storage):
+        while not self.stop.is_set():
+            try:
+                raw_url = self.queue.get(timeout=1)
+            except Empty:
+                continue
+
+            url = normalize_url(raw_url)
+            with self.vis_lock:
+                if not is_valid_url(url) or url in self.visited:
+                    self.queue.task_done()
+                    continue
+                self.visited.add(url)
+
+            with self.dom_lock:
+                elapsed = time.time() - self.domain_last[get_domain(url)]
+                if elapsed < POLITENESS_DELAY:
+                    time.sleep(POLITENESS_DELAY - elapsed)
+                self.domain_last[get_domain(url)] = time.time()
+
+            logger.info(f"Fetching {url}")
+            resp = fetch(url)
+            self.queue.task_done()
+
+            if not resp:
+                continue
+
+            with self.vis_lock:
+                self.count += 1
+                if self.count >= self.max_pages:
+                    self.stop.set()
+
+            links, items = parse(resp, self.include_regex, self.exclude_regex)
+            for it in items:
+                storage.save(it)
+
+            for link in links:
+                if self.stop.is_set(): break
+                n = normalize_url(link)
+                with self.vis_lock:
+                    if n not in self.visited:
+                        self.queue.put(n)
+
+            queue_size.set(self.queue.qsize())
+
+    def run(self, storage, metrics_port=None):
+        if metrics_port:
+            start_http_server(metrics_port)
+            logger.info(f"Metrics server on :{metrics_port}")
+
+        threads = [
+            Thread(target=self.worker, args=(storage,), daemon=True)
+            for _ in range(self.workers)
+        ]
+        for t in threads: t.start()
+
+        try:
+            while not self.stop.is_set():
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            logger.info("Interrupted, stopping...")
+            self.stop.set()
+
+        for t in threads: t.join()
+        self.save_state()
+        logger.info(f"Crawl complete: {self.count} pages fetched.")
 
 def run_crawler(url: str, mode: str, value):
 
@@ -251,11 +353,11 @@ def run_crawler(url: str, mode: str, value):
             text_content = first_para.get_text(strip=True) if first_para else ''
             return [ { 'Text': text_content } ]
         elif mode == 'image':
-            os.makedirs(img_dir, exist_ok=True)
+
             images = soup.find_all('img')
             base_dir = os.path.abspath(os.path.dirname(__file__))
             img_dir = os.path.join(base_dir, "..", "frontend", "build", "static", "images")
-
+            os.makedirs(img_dir, exist_ok=True)
             results = []
             for img in images:
                 src = img.get('src')
@@ -324,22 +426,20 @@ if __name__ == '__main__':
     parser.add_argument('--include-pattern', action='append', default=[])
     parser.add_argument('--exclude-pattern', action='append', default=[])
     parser.add_argument('--metrics-port',  type=int, default=None)
-    parser.add_argument('--output',  help='Output file', default=None)
-    parser.add_argument('--format', choices=['jsonl','csv'], default='jsonl')
+    parser.add_argument('--output',        help='Output file', default=None)
+    parser.add_argument('--format',        choices=['jsonl','csv'], default='jsonl')
     args = parser.parse_args()
 
     start_urls = args.start_urls or DEFAULT_START_URLS
     max_pages  = args.max_pages  or DEFAULT_MAX_PAGES
 
     storage = Storage()
-    sched= Scheduler(
+    sched    = Scheduler(
         start_urls,
         max_pages,
         args.workers,
         args.resume_file,
         args.include_pattern,
         args.exclude_pattern
-
-
     )
     sched.run(storage, args.metrics_port)
