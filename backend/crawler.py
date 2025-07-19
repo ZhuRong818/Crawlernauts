@@ -353,39 +353,7 @@ def run_crawler(url: str, mode: str, value):
             first_para = soup.select_one('body > p')
             text_content = first_para.get_text(strip=True) if first_para else ''
             return [ { 'Text': text_content } ]
-        elif mode == 'image':
-
-            images = soup.find_all('img')
-            base_dir = os.path.abspath(os.path.dirname(__file__))
-            img_dir = os.path.join(base_dir, "..", "frontend", "build", "static", "images")
-            os.makedirs(img_dir, exist_ok=True)
-            results = []
-            for img in images:
-                src = img.get('src')
-                if not src:
-                    continue
-                img_url = urljoin(url, src)
-                try:
-                    img_resp = requests.get(img_url, timeout=TIMEOUT)
-                    if img_resp.status_code == 200:
-                        # determine a save filename
-                        ext = ""
-                        if '.' in img_url.split('/')[-1]:
-                            ext = '.' + img_url.split('/')[-1].split('.')[-1][:5]
-                        elif 'image/' in img_resp.headers.get('Content-Type', ''):
-
-                            ext = '.' + img_resp.headers['Content-Type'].split('/')[-1]
-                        filename = f"{uuid.uuid4().hex}{ext}"
-                        file_path = os.path.join(img_dir, filename)
-                        with open(file_path, 'wb') as f:
-                            f.write(img_resp.content)
-                        results.append({
-                            'Image URL': img_url,
-                            'Saved File': f"/static/images/{filename}"
-                        })
-                except Exception as e:
-                    logging.exception(f"Image download failed for {img_url}: {e}")
-            return results
+       
         elif mode == 'tag':
 
             elements = soup.find_all(value)
