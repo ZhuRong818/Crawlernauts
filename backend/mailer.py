@@ -49,11 +49,34 @@ def send_verification_email(to_email: str, code: str) -> None:
     )
 
     message = Mail(
-        
+
         from_email=FROM_ADDRESS,
         to_emails=to_email,
         subject=subject,
         html_content=html,
+    )
+def send_crawl_finished_email(
+    to_email: str,
+    job_name: str,
+    ran_at: datetime,
+    result_url: str | None = None,
+) -> None:
+
+    subject = f"Crawlernaut – “{job_name}” finished ✔"
+
+    body = (
+        f"<p>Your scheduled crawl <strong>{job_name}</strong> finished at "
+        f"{ran_at:%Y-%m-%d %H:%M UTC}.</p>"
+    )
+
+    if result_url:
+        body += f'<p>View the results <a href="{result_url}">here</a>.</p>'
+
+    message = Mail(
+        from_email=FROM_ADDRESS,
+        to_emails=to_email,
+        subject=subject,
+        html_content=body,
     )
 
     _send_or_log(message, f"[DEV] verification code for {to_email}: {code}")
