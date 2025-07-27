@@ -33,6 +33,7 @@ def suggest():
             "Write in short paragraphs separated by a blank line.\n"
             "Do NOT use any Markdown syntax.\n"
             "If the user asks off-topic, steer them back to web-crawling."
+            "Provide relevant answer then ask if users need further help"
         )
     }
 
