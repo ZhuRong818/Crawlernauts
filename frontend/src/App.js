@@ -349,15 +349,6 @@ const scheduleCrawl = async (url,mode,value,name,iso) => {
         </>
       )}
 
-      {tab ==="scheduled"&& (
-
-        <ScheduledJobsTable
-          jobs={scheduledJobs}
-          onDelete={deleteJob}
-          onDetails={showDetails}
-          onDownload={runId => handleDownload(runId, "csv")}
-        />
-      )}
 
       {tab ==="api"&& !isGuest && (
         <APIAccess
